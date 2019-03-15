@@ -1,22 +1,21 @@
 import React, { Component } from 'react';
 import './App.css';
-import { Text, Button } from 'office-ui-fabric-react';
+import { Text } from 'office-ui-fabric-react';
 import { GraphFileBrowser } from '@microsoft/file-browser';
 import { UserAgentApplication } from 'msal';
 
-const scopes = ['files.readwrite.all', 'user.read'];
+const CLIENT_ID = 'f054b515-d62a-44dd-b760-ea4ec9c24c65';
+const SCOPES = ['files.readwrite.all', 'user.read'];
 
 class App extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
       token: null
     };
-    this.msal = new UserAgentApplication(
-        'f054b515-d62a-44dd-b760-ea4ec9c24c65',
-        '',
-        () => {}
-    );
+
+    this.msal = new UserAgentApplication(CLIENT_ID);
   }
 
   componentDidMount() {
@@ -24,16 +23,18 @@ class App extends Component {
   }
 
   render() {
+    const { token } = this.state;
+
     return (
       <div className="App">
         <Text variant="xxLarge">File Browser Demo</Text>
         {
-          this.state.token ?
+          token ?
             <GraphFileBrowser
-              getAuthenticationToken={ () => { return this.state.token; } }
-              onSuccess={alert}
-              onRenderCancelButton={()=>null}
-              onRenderSuccessButton={()=>null}
+              getAuthenticationToken={ () => Promise.resolve(token) }
+              onSuccess={ alert }
+              onRenderCancelButton={ () => null }
+              onRenderSuccessButton={ () => null }
             />
             :
             <Text block>logging in...</Text>
@@ -42,24 +43,27 @@ class App extends Component {
     );
   }
 
+  _acquireAccessToken() {
+    this.msal.acquireTokenSilent(SCOPES).then(token => {
+      this.setState({ token });
+    }, err => {
+      this.msal.acquireTokenRedirect(SCOPES);
+    });
+  }
+
+  _loginPromptAndAuthenticate() {
+    this.msal.loginPopup(SCOPES).then(idToken => {
+      this._acquireAccessToken()
+    });
+  }
+
   _getMsalToken() {
-    debugger;
-    let user = this.msal.getUser();
+    const user = this.msal.getUser();
+
     if (user) {
-        console.log("got user");
-        this.msal.acquireTokenSilent(scopes).then(token => {
-          console.log("silent token");
-          this.setState({ token: token });
-        }, err => {
-            console.log("acquireTokenRedirect");
-            this.msal.acquireTokenRedirect(scopes);
-        });
+      this._acquireAccessToken();
     } else {
-      console.log("loginpopup");
-      //this.msal.loginRedirect(scopes);
-      this.msal.loginPopup(scopes).then(token => {
-        this.setState({ token: token });
-      });
+      this._loginPromptAndAuthenticate();
     }
   }
 }

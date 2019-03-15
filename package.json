@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "react": "^16.8.4",
-    "react-dom": "^16.8.4",
-    "react-scripts": "2.1.8",
     "@microsoft/file-browser": "^1.0.0-preview.0",
     "@microsoft/microsoft-graph-client": "^1.2.0",
-    "msal": "^0.2.3",
-    "office-ui-fabric-react": "^6.71.0"
+    "msal": "^0.2.4",
+    "office-ui-fabric-react": "^6.71.0",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4",
+    "react-scripts": "2.1.8"
   },
   "scripts": {
     "start": "react-scripts start",
