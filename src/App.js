@@ -19,7 +19,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this._getMsalToken();
+    this._tryGetMsalToken();
   }
 
   render() {
@@ -37,13 +37,13 @@ class App extends Component {
               onRenderSuccessButton={ () => null }
             />
             :
-            <Text block>logging in...</Text>
+            <Text block onClick={this._getMsalToken}>[log in]</Text>
         }
       </div>
     );
   }
 
-  _acquireAccessToken() {
+  _acquireAccessToken = () => {
     this.msal.acquireTokenSilent(SCOPES).then(token => {
       this.setState({ token });
     }, err => {
@@ -51,13 +51,21 @@ class App extends Component {
     });
   }
 
-  _loginPromptAndAuthenticate() {
+  _loginPromptAndAuthenticate = () => {
     this.msal.loginPopup(SCOPES).then(idToken => {
       this._acquireAccessToken()
     });
   }
 
-  _getMsalToken() {
+  _tryGetMsalToken = () => {
+    const user = this.msal.getUser();
+
+    if (user) {
+      this._acquireAccessToken();
+    }
+  }
+
+  _getMsalToken = () => {
     const user = this.msal.getUser();
 
     if (user) {
